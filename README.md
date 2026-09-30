@@ -120,23 +120,17 @@ ASL-Recognition/
 
 ML and model development is actively conducted in **Google Colab** connected to Google Drive storage (`PROJECT_DIR = Path("/content/drive/MyDrive/ASL-Recognition")`).
 
-> [!TIP]
-> **How to Add Your Colab Links**:
-> To link your notebooks for mentors and collaborators, replace `PASTE_COLAB_URL_HERE` in the table below with your notebook's Google Colab share link (e.g., `https://colab.research.google.com/drive/...`). The actual `.ipynb` files will be saved directly into [`notebooks/`](file:///Users/abhishekratnakar/ASL-Generator-recognition-system/notebooks) once each stage is validated.
-
 | Notebook | Description | Status | Colab Link |
 |---|---|---|---|
 | `01_environment_setup.ipynb` | Colab setup, PyTorch, GPU verification | **COMPLETED** | [Open in Colab](https://colab.research.google.com/drive/1qZap3MAxTitMWBjwlGohDIFpxJVkPoyo?usp=sharing) |
 | `02_dataset_setup.ipynb` | WLASL-100 metadata, class mapping, signer split | **COMPLETED** | [Open in Colab](https://colab.research.google.com/drive/1qX0VA66-4hFp9-WslgDGIO9YdOOl27RU?usp=sharing) |
 | `03_video_preprocessing.ipynb` | Video decoding, 32-frame sampling, DataLoader | **COMPLETED** | [Open in Colab](https://colab.research.google.com/drive/1wMA0PbR8gQREaBi20iHGv7yDAMgUDKaf?usp=sharing) |
 | `04_visual_baseline.ipynb` | ResNet50 + LSTM architecture & smoke test | **COMPLETED** | [Open in Colab](https://colab.research.google.com/drive/1NgXOM5puF4wOlZNSvdi16dyqnmwnaxuM?usp=sharing) |
-| `05_visual_training.ipynb` | Visual model training & checkpointing | **NEXT** | [Open in Colab](PASTE_COLAB_URL_05_HERE) |
-| `06_architecture_experiments.ipynb` | Temporal pooling, unfreezing, augmentations | **PLANNED** | [Open in Colab](PASTE_COLAB_URL_06_HERE) |
-| `07_language_encoder.ipynb` | Gloss representation & text embeddings | **PLANNED** | [Open in Colab](PASTE_COLAB_URL_07_HERE) |
-| `08_multimodal_training.ipynb` | Vision-language contrastive alignment | **PLANNED** | [Open in Colab](PASTE_COLAB_URL_08_HERE) |
-| `09_final_evaluation.ipynb` | Final benchmark, error analysis, model export | **PLANNED** | [Open in Colab](PASTE_COLAB_URL_09_HERE) |
-
-> *Note: Replace placeholders with verified Colab URLs as notebooks undergo formal review.*
+| `05_visual_training.ipynb` | Visual model training & checkpointing | **NEXT** | *Pending* |
+| `06_architecture_experiments.ipynb` | Temporal pooling, unfreezing, augmentations | **PLANNED** | *Pending* |
+| `07_language_encoder.ipynb` | Gloss representation & text embeddings | **PLANNED** | *Pending* |
+| `08_multimodal_training.ipynb` | Vision-language contrastive alignment | **PLANNED** | *Pending* |
+| `09_final_evaluation.ipynb` | Final benchmark, error analysis, model export | **PLANNED** | *Pending* |
 
 ---
 
