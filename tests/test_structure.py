@@ -1,7 +1,14 @@
 """Sanity tests for project structure, module imports, and requirements."""
 
 import os
+import sys
 from pathlib import Path
+
+# Ensure project root is on sys.path regardless of execution environment
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 
 def test_project_directories():
     """Verify that expected project directories exist."""
