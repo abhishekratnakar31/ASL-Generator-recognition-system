@@ -1,0 +1,23 @@
+# Multimodal Alignment Configuration (Planned Stage)
+experiment_name: "multimodal_alignment"
+seed: 42
+
+visual_encoder:
+  backbone: "resnet50"
+  temporal: "lstm"
+  feature_dim: 2048
+  visual_embedding_dim: 256
+
+language_encoder:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  language_embedding_dim: 256
+
+alignment:
+  similarity_metric: "cosine"
+  temperature: 0.07
+  loss_fn: "ContrastiveLoss"
+
+training:
+  batch_size: 16
+  learning_rate: 5.0e-4
+  epochs: 30

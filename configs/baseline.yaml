@@ -1,0 +1,27 @@
+# Baseline Configuration (Smoke Test & Initial Setup)
+experiment_name: "visual_baseline"
+seed: 42
+
+dataset:
+  name: "WLASL-100"
+  num_classes: 100
+  metadata_path: "metadata/wlasl100_metadata_with_split.csv"
+  video_dir: "videos"
+  num_frames: 32
+  image_size: 224
+
+model:
+  backbone: "resnet50"
+  pretrained: true
+  frozen_backbone: true
+  temporal: "lstm"
+  hidden_size: 256
+  num_layers: 2
+  dropout: 0.3
+
+training:
+  batch_size: 4
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  optimizer: "AdamW"
+  loss_fn: "CrossEntropyLoss"

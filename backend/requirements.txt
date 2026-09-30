@@ -1,0 +1,1 @@
+# Backend dependencies (FastAPI, Uvicorn, etc. to be added during backend development phase)

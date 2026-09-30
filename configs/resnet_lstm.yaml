@@ -1,0 +1,38 @@
+# ResNet50 + LSTM Training Configuration
+experiment_name: "resnet_lstm_visual_training"
+seed: 42
+
+dataset:
+  name: "WLASL-100"
+  num_classes: 100
+  metadata_path: "metadata/wlasl100_metadata_with_split.csv"
+  video_dir: "videos"
+  num_frames: 32
+  image_size: 224
+
+preprocessing:
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+model:
+  backbone: "resnet50"
+  feature_dim: 2048
+  pretrained: true
+  frozen_backbone: true
+  temporal: "lstm"
+  hidden_size: 256
+  num_layers: 2
+  dropout: 0.3
+  num_classes: 100
+
+training:
+  batch_size: 16
+  num_workers: 4
+  epochs: 50
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  optimizer: "AdamW"
+  scheduler: "CosineAnnealingLR"
+  loss_fn: "CrossEntropyLoss"
+  checkpoint_dir: "models/checkpoints"
+  save_best_only: true

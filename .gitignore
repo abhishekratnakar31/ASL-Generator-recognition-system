@@ -1,0 +1,127 @@
+# ==================================================
+# Python & PyTorch
+# ==================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# PyTorch & Model Checkpoints
+*.pt
+*.pth
+*.pwf
+*.ckpt
+*.bin
+*.onnx
+*.engine
+*.tflite
+models/checkpoints/*
+!models/checkpoints/.gitkeep
+models/final/*
+!models/final/.gitkeep
+
+# ==================================================
+# Jupyter / Google Colab
+# ==================================================
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# ==================================================
+# Node / Frontend
+# ==================================================
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.next/
+frontend/coverage/
+.npm
+.yarn/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================================================
+# Environment & Secrets
+# ==================================================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+*.pem
+*.key
+
+# ==================================================
+# Datasets & Video Files
+# ==================================================
+data/
+raw_videos/
+videos/
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.flv
+*.wmv
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.7z
+*.rar
+*.h5
+*.hdf5
+*.parquet
+
+# ==================================================
+# Generated Experiment Results
+# ==================================================
+results/metrics/*
+!results/metrics/.gitkeep
+results/plots/*
+!results/plots/.gitkeep
+results/confusion_matrices/*
+!results/confusion_matrices/.gitkeep
+*.log
+runs/
+wandb/
+
+# ==================================================
+# IDE & System Files
+# ==================================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Preserve .gitkeep across directories
+!.gitkeep
