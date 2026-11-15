@@ -21,3 +21,14 @@ tqdm>=4.65.0
 # Configuration & Utilities
 pyyaml>=6.0
 python-dotenv>=1.0.0
+
+# Language Encoders (Multimodal Branch)
+transformers>=4.38.0
+sentence-transformers>=2.5.0
+
+# Pose Estimation & Kinematics
+rtmlib>=0.0.16
+onnxruntime>=1.16.0
+
+# Testing
+pytest>=8.0.0

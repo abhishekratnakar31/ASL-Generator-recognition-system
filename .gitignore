@@ -76,11 +76,15 @@ yarn-error.log*
 *.key
 
 # ==================================================
-# Datasets & Video Files
+# Datasets, Cache Arrays & Video Files
 # ==================================================
 data/
+drive/
 raw_videos/
 videos/
+*.npy
+*.npz
+.pytest_cache/
 *.mp4
 *.avi
 *.mov

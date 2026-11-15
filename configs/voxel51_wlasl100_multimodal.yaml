@@ -1,0 +1,61 @@
+# Voxel51/WLASL Top-100 Multimodal Vision-Language Configuration (Colab GPU / Local CLI)
+experiment_name: "wlasl100_multimodal_gated_fusion"
+seed: 42
+mode: "multimodal"
+
+dataset:
+  name: "Voxel51-WLASL-Top100"
+  num_classes: 100
+  metadata_dir: "/content/drive/MyDrive/ASL-Recognition/voxel51_wlasl100/metadata"
+  feature_cache_dir: "/content/drive/MyDrive/ASL-Recognition/voxel51_wlasl100/features"
+  videos_dir: "/content/wlasl100_cache/videos"
+  num_frames: 32
+  image_size: 224
+
+model:
+  backbone: "resnet50"
+  feature_dim: 2048
+  hidden_size: 256
+  num_layers: 2
+  temporal: "lstm"
+  bidirectional: false
+  pooling: "attention"
+  embed_dim: 256
+  dropout: 0.35
+  fusion_mode: "gated_fusion"
+  fusion_alpha: 0.5
+
+language:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  vocab_embeddings_path: "/content/drive/MyDrive/ASL-Recognition/voxel51_wlasl100/features/text_embeddings_prompt.pt"
+  prompt_template: "An American Sign Language sign representing the word '{gloss}'"
+
+augmentation:
+  enabled: true
+  crop_ratio_range: [0.85, 1.0]
+  feature_dropout: 0.10
+  noise_std: 0.02
+
+loss:
+  label_smoothing: 0.05
+  contrastive_weight: 0.5
+  classification_weight: 0.5
+  batch_infonce_weight: 0.25
+
+training:
+  batch_size: 32
+  num_workers: 2
+  epochs: 60
+  learning_rate: 8.0e-4
+  weight_decay: 1.0e-4
+  grad_clip_norm: 1.0
+  optimizer: "AdamW"
+  scheduler: "cosine"
+  patience: 15
+  use_amp: true
+  balanced_sampling: true
+  sampler_power: 0.5
+  class_weighted_loss: false
+  checkpoint_dir: "/content/drive/MyDrive/ASL-Recognition/voxel51_wlasl100/checkpoints"
+  resume: true
+
