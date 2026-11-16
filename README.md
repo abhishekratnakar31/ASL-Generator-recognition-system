@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/Tests-36%2F36%20Passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-47%2F47%20Passed-brightgreen.svg)]()
 [![Dataset](https://img.shields.io/badge/Dataset-WLASL--100%20(Voxel51)-orange.svg)](https://voxel51.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -134,13 +134,13 @@ All experiments were developed and executed in Google Colab with GPU acceleratio
 
 | # | Notebook | Focus & Objective | Key Output / Metric | Colab Link |
 |---|---|---|---|:---:|
-| **01** | `01_wlasl100_dataset_setup.ipynb` | Selective download, metadata joining, signer-disjoint split | 1,120 clean clips, 100% OpenCV decode verified | [Open in Colab]() |
-| **02** | `02_wlasl100_feature_extraction.ipynb` | ResNet50 (2048-D) & all-MiniLM-L6-v2 (384-D) extraction | Cached feature arrays & text embeddings | [Open in Colab]() |
-| **03** | `03_wlasl100_visual_baselines.ipynb` | Frozen ResNet50 + LSTM / Transformer | Top-1: 11.93% (diagnosed background shortcut) | [Open in Colab]() |
-| **04** | `04_wlasl100_multimodal_training.ipynb` | ResNet50 + MiniLM contrastive alignment | Top-1: 11.01% / Top-5: 25.69% | [Open in Colab]() |
-| **04b** | `04b_wlasl100_pose_hand_upgrade.ipynb` | 53-Keypoint WholeBody pose extraction (349-D) | Top-1: **41.28%** / Top-5: **68.81%** (3.7x jump) | [Open in Colab]() |
-| **04c** | `04c_wlasl100_pose_boost.ipynb` | Cosine head, kinematic augmentations, ensembling | Validation Top-1: **43.12%** / Top-5: **72.48%** | [Open in Colab]() |
-| **05** | `05_wlasl100_final_evaluation.ipynb` | Official locked test-set evaluation across 20 signers | Test Top-1: **43.04%** / Top-5: **76.52%** / Top-10: **83.91%** | [Open in Colab]() |
+| **01** | `01_wlasl100_dataset_setup.ipynb` | Selective download, metadata joining, signer-disjoint split | 1,120 clean clips, 100% OpenCV decode verified | [Open in Colab](https://colab.research.google.com/drive/12AgpLa0MAMGIh6uvxO8hR1fhgepovWEH?usp=sharing) |
+| **02** | `02_wlasl100_feature_extraction.ipynb` | ResNet50 (2048-D) & all-MiniLM-L6-v2 (384-D) extraction | Cached feature arrays & text embeddings | [Open in Colab](https://colab.research.google.com/drive/1kKoMueAaYftPXlGuPJpRLHTjs8WC63wg?usp=sharing) |
+| **03** | `03_wlasl100_visual_baselines.ipynb` | Frozen ResNet50 + LSTM / Transformer | Top-1: 11.93% (diagnosed background shortcut) | [Open in Colab](https://colab.research.google.com/drive/1kjXL6Jl2Dbx_5EW5AHYW6-GIWxmDvEwz?usp=sharing) |
+| **04** | `04_wlasl100_multimodal_training.ipynb` | ResNet50 + MiniLM contrastive alignment | Top-1: 11.01% / Top-5: 25.69% | [Open in Colab](https://colab.research.google.com/drive/1ykR5uqzOoJTP0P1N_AuYdhT289Lv2tb_?usp=sharing) |
+| **04b** | `04b_wlasl100_pose_hand_upgrade.ipynb` | 53-Keypoint WholeBody pose extraction (349-D) | Top-1: **41.28%** / Top-5: **68.81%** (3.7x jump) | [Open in Colab](https://colab.research.google.com/drive/1O3KiDrwjEe0LL33W_Rh0-rHg5t7d9uj5?usp=sharing) |
+| **04c** | `04c_wlasl100_pose_boost.ipynb` | Cosine head, kinematic augmentations, ensembling | Validation Top-1: **43.12%** / Top-5: **72.48%** | [Open in Colab](https://colab.research.google.com/drive/12EAxNmeC6Iwj4kf1nfJAP72N2OcxyWDj?usp=sharing) |
+| **05** | `05_wlasl100_final_evaluation.ipynb` | Official locked test-set evaluation across 20 signers | Test Top-1: **43.04%** / Top-5: **76.52%** / Top-10: **83.91%** | [Open in Colab](https://colab.research.google.com/drive/1isplgGfcNFFH40AsluWde3FrUtIY3e32?usp=sharing) |
 
 ---
 
@@ -228,15 +228,22 @@ pytest -v
 
 ---
 
-## FastAPI Inference Service
+## FastAPI Inference Service & Interactive Web UI
 
-The backend provides high-performance inference using the trained production model bundle:
+The backend provides high-performance inference and an interactive client using the trained production model bundle:
 
 ### 1. Launch Server Locally
 ```bash
-export ASL_CHECKPOINT_PATH="checkpoints/production_model/pose_transformer_checkpoint.pt"
-uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+# One-click launcher (auto-activates .venv and launches FastAPI on port 8000)
+./run_server.sh
 ```
+Or directly via the virtual environment:
+```bash
+./.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+- **Interactive Web App:** Open [http://localhost:8000](http://localhost:8000) (or [http://localhost:8000/app](http://localhost:8000/app)) in your browser.
+- **Interactive Swagger Docs:** Open [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ### 2. Health Check
 ```bash
@@ -247,32 +254,52 @@ curl http://localhost:8000/health
   "status": "ok",
   "model_loaded": true,
   "device": "cpu",
-  "model_type": "pose_transformer_only",
+  "model_type": "ensemble_equal_three",
   "num_classes": 100
 }
 ```
 
 ### 3. Predict Gloss from Video File
 ```bash
-curl -X POST "http://localhost:8000/predict" \
+curl -X POST "http://localhost:8000/api/v1/predict/video?top_k=5" \
   -H "accept: application/json" \
-  -F "file=@sample_asl_sign.mp4" \
-  -F "top_k=5"
+  -F "file=@sample_asl_sign.mp4"
 ```
 ```json
 {
   "predicted_gloss": "language",
-  "predicted_class_id": 48,
+  "predicted_class_id": 52,
   "confidence": 0.9421,
   "top_k": [
-    {"class_id": 48, "gloss": "language", "confidence": 0.9421, "score": 8.74},
-    {"class_id": 12, "gloss": "sentence", "confidence": 0.0312, "score": 5.12},
-    {"class_id": 67, "gloss": "write", "confidence": 0.0142, "score": 4.28},
-    {"class_id": 5,  "gloss": "book", "confidence": 0.0071, "score": 3.65},
-    {"class_id": 91, "gloss": "read", "confidence": 0.0054, "score": 3.21}
+    {"class_id": 52, "gloss": "language", "confidence": 0.9421, "score": 0.9421},
+    {"class_id": 16, "gloss": "call", "confidence": 0.0312, "score": 0.0312},
+    {"class_id": 80, "gloss": "speech", "confidence": 0.0142, "score": 0.0142},
+    {"class_id": 1,  "gloss": "apple", "confidence": 0.0071, "score": 0.0071},
+    {"class_id": 99, "gloss": "yes", "confidence": 0.0054, "score": 0.0054}
   ],
-  "model_type": "pose_transformer_only",
-  "latency_ms": 42.8
+  "model_type": "ensemble_equal_three",
+  "latency_ms": 31.8
+}
+```
+
+### 4. ASL Generator (Text-to-Sign Semantic Retrieval)
+```bash
+curl -X POST "http://localhost:8000/api/v1/generate/sign" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "medical appointment", "top_k": 3}'
+```
+```json
+{
+  "query": "medical appointment",
+  "matched_gloss": "appointment",
+  "matched_class_id": 2,
+  "confidence": 0.884,
+  "top_matches": [
+    {"class_id": 2, "gloss": "appointment", "similarity": 0.884, "exact_match": false},
+    {"class_id": 34, "gloss": "doctor", "similarity": 0.762, "exact_match": false},
+    {"class_id": 49, "gloss": "help", "similarity": 0.541, "exact_match": false}
+  ],
+  "latency_ms": 11.2
 }
 ```
 
@@ -292,11 +319,11 @@ For walkthrough presentations, demonstrations, or project reviews, a complete sc
 - [x] **53-Keypoint Pose Kinematics:** 349-D invariant temporal feature extraction.
 - [x] **Multimodal Alignment:** Sentence-BERT semantic representation projection.
 - [x] **Locked Test Evaluation:** 43.0% Top-1, 76.5% Top-5, 83.9% Top-10.
-- [x] **Automated Test Coverage:** 37 passing pytest tests across models, transforms, and inference.
-- [ ] **Live Video-to-Pose Inference:** Native webcam/MP4 pose extraction via `rtmlib`.
-- [ ] **FastAPI Endpoints:** Video upload, pose streaming, and Text-to-Sign semantic retrieval.
-- [ ] **Interactive Frontend:** Next.js client with live camera capture and real-time confidence dashboard.
-- [ ] **Containerization:** Production Docker Compose deployment.
+- [x] **Automated Test Coverage:** 48 passing pytest tests across models, transforms, API endpoints, and inference.
+- [x] **Live Video-to-Pose Inference:** Native webcam & video pose extraction via `rtmlib` (COCO-WholeBody).
+- [x] **FastAPI Endpoints:** Video upload, canvas frame streaming, pose streaming, and Text-to-Sign semantic retrieval.
+- [x] **Interactive Frontend:** Real-time web client with live camera frame capture, drag-and-drop video upload, ASL Generator, and 100 Signs Dictionary.
+- [ ] **Containerization:** Production Docker Compose deployment (optional).
 
 ---
 

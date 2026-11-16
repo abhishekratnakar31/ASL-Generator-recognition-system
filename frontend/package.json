@@ -1,0 +1,15 @@
+{
+  "name": "asl-multimodal-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive Web Client for ASL Recognition and Text-to-Sign Generation",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["asl", "sign-language", "multimodal", "fastapi", "webrtc"],
+  "author": "ASL Recognition Team",
+  "license": "MIT"
+}
+

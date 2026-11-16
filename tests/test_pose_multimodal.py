@@ -134,3 +134,24 @@ def test_pose_multimodal_model_all_modes_backward():
     loss_mm, _ = crit(out_mm_cos, labels)
     assert torch.isfinite(loss_mm)
     loss_mm.backward()
+
+
+def test_pose_extractor_from_frames():
+    from src.preprocessing.pose import PoseExtractor
+
+    def mock_wholebody(frame: np.ndarray):
+        kpts = np.zeros((1, 133, 2), dtype=np.float32)
+        kpts[0, 5] = [100.0, 80.0]
+        kpts[0, 6] = [180.0, 80.0]
+        scores = np.ones((1, 133), dtype=np.float32) * 0.95
+        return kpts, scores
+
+    extractor = PoseExtractor(wholebody_instance=mock_wholebody)
+    dummy_frames = [np.zeros((240, 320, 3), dtype=np.uint8) for _ in range(16)]
+    features = extractor.extract_from_frames(dummy_frames)
+    assert features.shape == (16, POSE_FEATURE_DIM)
+    assert np.isfinite(features).all()
+
+    with pytest.raises(ValueError, match="No frames provided"):
+        extractor.extract_from_frames([])
+

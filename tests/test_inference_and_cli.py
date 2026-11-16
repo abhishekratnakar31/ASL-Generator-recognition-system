@@ -158,3 +158,27 @@ def test_visual_and_multimodal_checkpoint_inference_roundtrip(tmp_path: Path):
     res_p = pose_svc.predict_tensor(torch.randn(1, 32, 349), top_k=2)
     assert res_p["model_type"] == "pose_pose_only"
     assert len(res_p["top_k"]) == 2
+
+
+@pytest.mark.skipif(not HAS_TORCH_CV2, reason="torch and cv2 required")
+def test_production_model_bundle_ensemble_roundtrip():
+    """Verify loading real exported production bundle from models/final/production_model."""
+    from src.inference.predictor import ASLEnsembleService
+
+    prod_dir = ROOT_DIR / "models" / "final" / "production_model"
+    if not prod_dir.is_dir():
+        pytest.skip("models/final/production_model bundle not present")
+
+    ens = ASLEnsembleService.from_bundle(prod_dir, device="cpu")
+    assert len(ens.id_to_class) == 100
+    assert len(ens.services) == 3
+    assert pytest.approx(sum(ens.weights.values()), rel=1e-3) == 1.0
+
+    dummy_pose = torch.randn(1, 32, 349)
+    res = ens.predict_tensor(dummy_pose, top_k=5)
+    assert res["model_type"] == "ensemble_equal_three"
+    assert len(res["top_k"]) == 5
+    assert res["predicted_gloss"] in ens.id_to_class.values()
+    assert 0.0 <= res["confidence"] <= 1.0
+    assert res["latency_ms"] >= 0.0
+

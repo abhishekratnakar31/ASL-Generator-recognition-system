@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASL Recognition & Generation System</title>
+  <link rel="stylesheet" href="/frontend/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">🤟</div>
+        <div class="brand-text">
+          <h1>ASL Multimodal System</h1>
+          <p class="subtitle">WLASL-100 Sign Recognition & Text-to-Sign Generator</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div id="modelStatusPill" class="status-pill status-loading">
+          <span class="status-dot"></span>
+          <span id="modelStatusText">Connecting to Backend...</span>
+        </div>
+        <a href="/docs" target="_blank" class="btn btn-secondary btn-sm">API Docs</a>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="camera">
+        <span class="tab-icon">📹</span> Live Camera
+      </button>
+      <button class="nav-tab" data-tab="upload">
+        <span class="tab-icon">📁</span> Upload Video
+      </button>
+      <button class="nav-tab" data-tab="generator">
+        <span class="tab-icon">✨</span> ASL Generator
+      </button>
+      <button class="nav-tab" data-tab="dictionary">
+        <span class="tab-icon">📚</span> 100 Signs Dictionary
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Tab 1: Live Camera Recognition -->
+      <section id="tab-camera" class="tab-panel active">
+        <div class="two-column-layout">
+          <!-- Video Stream Card -->
+          <div class="card camera-card">
+            <div class="card-header">
+              <h2>Webcam Capture</h2>
+              <span class="badge badge-info">3.0s Motion Clip</span>
+            </div>
+            <div class="video-container">
+              <video id="webcamVideo" autoplay playsinline muted></video>
+              <div id="countdownOverlay" class="countdown-overlay hidden">
+                <span id="countdownNumber">3</span>
+              </div>
+              <div id="recordingIndicator" class="recording-badge hidden">
+                <span class="record-pulse"></span> REC (<span id="recordTimer">0.0</span>s)
+              </div>
+            </div>
+            <div class="camera-controls">
+              <button id="startCameraBtn" class="btn btn-secondary">
+                <span>📷</span> Start Camera
+              </button>
+              <button id="captureBtn" class="btn btn-primary" disabled>
+                <span>🔴</span> Record Sign (3s)
+              </button>
+            </div>
+            <p class="hint-text">Center your upper body and hands in the frame before clicking Record.</p>
+          </div>
+
+          <!-- Live Results Card -->
+          <div class="card results-card">
+            <div class="card-header">
+              <h2>Prediction Results</h2>
+              <span id="cameraLatencyBadge" class="badge badge-neutral">— ms</span>
+            </div>
+            <div id="cameraResultsBody" class="results-body">
+              <div class="empty-state">
+                <div class="empty-icon">👈</div>
+                <p>Record a 3-second gesture to see real-time gloss prediction and Top-5 candidates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: Upload Video File -->
+      <section id="tab-upload" class="tab-panel">
+        <div class="two-column-layout">
+          <!-- Upload Dropzone Card -->
+          <div class="card upload-card">
+            <div class="card-header">
+              <h2>Upload Video Clip</h2>
+              <span class="badge badge-info">MP4, WebM, MOV</span>
+            </div>
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/mov,video/avi" hidden>
+              <div class="dropzone-content">
+                <span class="dropzone-icon">📤</span>
+                <p class="dropzone-title">Drag & drop your ASL video here</p>
+                <p class="dropzone-subtitle">or click to browse your files</p>
+              </div>
+            </div>
+            <div id="selectedFileInfo" class="file-info hidden">
+              <span class="file-name" id="fileName">video.mp4</span>
+              <button id="removeFileBtn" class="btn-icon">✕</button>
+            </div>
+            <video id="uploadPreviewVideo" controls class="upload-preview hidden"></video>
+            <button id="submitUploadBtn" class="btn btn-primary btn-block" disabled>
+              <span>⚡</span> Run ASL Recognition
+            </button>
+          </div>
+
+          <!-- Upload Results Card -->
+          <div class="card results-card">
+            <div class="card-header">
+              <h2>Prediction Results</h2>
+              <span id="uploadLatencyBadge" class="badge badge-neutral">— ms</span>
+            </div>
+            <div id="uploadResultsBody" class="results-body">
+              <div class="empty-state">
+                <div class="empty-icon">📁</div>
+                <p>Upload a sign language clip and click "Run ASL Recognition".</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: ASL Generator (Text-to-Sign Semantic Search) -->
+      <section id="tab-generator" class="tab-panel">
+        <div class="card generator-card">
+          <div class="card-header">
+            <div>
+              <h2>ASL Generator (Text-to-Sign)</h2>
+              <p class="card-subtitle">Query English words or phrases to retrieve corresponding ASL sign representations.</p>
+            </div>
+            <span class="badge badge-purple">MiniLM Multimodal Head</span>
+          </div>
+
+          <div class="generator-search-box">
+            <input type="text" id="generatorQueryInput" placeholder="Enter an English word or concept (e.g. 'doctor', 'dark', 'medical appointment')...">
+            <button id="generatorSearchBtn" class="btn btn-primary">
+              <span>🔍</span> Retrieve Sign
+            </button>
+          </div>
+
+          <div class="prompt-suggestions">
+            <span class="suggestion-label">Try prompt:</span>
+            <button class="pill-btn" data-query="appointment">appointment</button>
+            <button class="pill-btn" data-query="language">language</button>
+            <button class="pill-btn" data-query="sandwich">sandwich</button>
+            <button class="pill-btn" data-query="dark">dark</button>
+            <button class="pill-btn" data-query="doctor">doctor</button>
+            <button class="pill-btn" data-query="hearing impaired">hearing impaired</button>
+          </div>
+
+          <div id="generatorResultsContainer" class="generator-results hidden">
+            <div class="generator-top-match">
+              <div class="match-badge-wrap">
+                <span class="match-label">TOP RETRIEVED SIGN</span>
+                <span id="generatorExactBadge" class="badge badge-success hidden">Exact Match</span>
+              </div>
+              <h3 id="generatorTopGloss" class="top-gloss-title">—</h3>
+              <div class="match-metrics">
+                <div class="metric-item">
+                  <span class="metric-label">Semantic Similarity</span>
+                  <span id="generatorSimilarity" class="metric-val">0.0%</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Class ID</span>
+                  <span id="generatorClassId" class="metric-val">#—</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Lookup Latency</span>
+                  <span id="generatorLatency" class="metric-val">0 ms</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="alternative-matches">
+              <h4>Alternative Semantic Neighbors</h4>
+              <div id="generatorAlternativesList" class="alternatives-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: 100 Signs Dictionary -->
+      <section id="tab-dictionary" class="tab-panel">
+        <div class="card dictionary-card">
+          <div class="card-header">
+            <div>
+              <h2>WLASL-100 Vocabulary Dictionary</h2>
+              <p class="card-subtitle">All 100 supported isolated sign glosses with performance tiers on unseen test signers.</p>
+            </div>
+            <div class="dictionary-stats">
+              <span class="badge badge-success">10 Perfect F1 Signs (1.00)</span>
+              <span id="dictCountBadge" class="badge badge-neutral">100 Signs</span>
+            </div>
+          </div>
+
+          <div class="dictionary-filter-bar">
+            <input type="text" id="dictSearchInput" placeholder="Filter signs by name (e.g. 'book', 'dark', 'lang')...">
+          </div>
+
+          <div id="dictionaryGrid" class="dictionary-grid">
+            <!-- Populated via app.js -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>ASL Multimodal Recognition & Generation System • Built with PyTorch, RTMPose, Sentence-BERT & FastAPI</p>
+      <p class="footer-links">
+        <a href="/docs" target="_blank">Swagger API</a> •
+        <a href="/health" target="_blank">Health Status</a> •
+        <span>WLASL-100 Benchmark</span>
+      </p>
+    </footer>
+  </div>
+
+  <script src="/frontend/app.js"></script>
+</body>
+</html>
+

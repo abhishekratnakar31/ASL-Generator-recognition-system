@@ -19,10 +19,10 @@ class SegmentBounds:
 
     start_idx: int
     end_idx: int
-    annotation_type: str
-    fps_converted: bool
-    clamped_end: bool
-    overflow_frames: int
+    annotation_type: str = "full_video"
+    fps_converted: bool = False
+    clamped_end: bool = False
+    overflow_frames: int = 0
 
 
 def _parse_int_or_default(value: Any, default: int) -> int:

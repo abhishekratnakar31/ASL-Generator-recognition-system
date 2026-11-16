@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from src.models.language.language_encoder import TextProjectionHead
-from src.models.visual.lstm import TemporalLSTM, TemporalTransformerEncoder
+from src.models.visual.lstm import TemporalAttentionPool, TemporalLSTM, TemporalTransformerEncoder
 
 
 class CosineClassifier(nn.Module):
@@ -33,6 +33,38 @@ class CosineClassifier(nn.Module):
         w_norm = F.normalize(self.weight, p=2, dim=-1)
         scale = self.logit_scale.exp().clamp(min=1.0, max=50.0)
         return scale * F.linear(x_norm, w_norm)
+
+
+class TemporalBiLSTMEncoder(nn.Module):
+    """Bidirectional LSTM with input LayerNorm, sequence LayerNorm, and attention pooling."""
+
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dim: int = 96,
+        num_layers: int = 2,
+        dropout: float = 0.35,
+    ) -> None:
+        super().__init__()
+        self.input_proj = nn.Sequential(
+            nn.LayerNorm(input_dim),
+            nn.Dropout(dropout),
+        )
+        self.lstm = nn.LSTM(
+            input_size=input_dim,
+            hidden_size=hidden_dim,
+            num_layers=num_layers,
+            batch_first=True,
+            bidirectional=True,
+            dropout=dropout if num_layers > 1 else 0.0,
+        )
+        self.norm = nn.LayerNorm(hidden_dim * 2)
+        self.attn_pool = TemporalAttentionPool(hidden_dim * 2)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        h = self.input_proj(x)
+        seq, _ = self.lstm(h)
+        return self.attn_pool(self.norm(seq))
 
 
 class PoseVisualMultimodalModel(nn.Module):
@@ -73,13 +105,11 @@ class PoseVisualMultimodalModel(nn.Module):
 
         if backbone == "bilstm":
             lstm_hidden = max(16, hidden_dim // 2)
-            self.pose_encoder: nn.Module = TemporalLSTM(
+            self.pose_encoder: nn.Module = TemporalBiLSTMEncoder(
                 input_dim=pose_dim,
                 hidden_dim=lstm_hidden,
                 num_layers=num_layers,
                 dropout=dropout,
-                bidirectional=True,
-                pooling="attention",
             )
         else:
             self.pose_encoder = TemporalTransformerEncoder(

@@ -1,6 +1,7 @@
 """Whole-body (upper body + 21L + 21R hands) pose extraction and normalization for ASL."""
 
 import json
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -204,4 +205,100 @@ def select_primary_signer(
     mean_scores = sc[:, ASL_KEYPOINT_INDICES].mean(axis=1)
     best_idx = int(np.argmax(mean_scores))
     return kpts[best_idx, :133, :2], sc[best_idx, :133]
+
+
+class PoseExtractor:
+    """Extracts 53-joint WholeBody pose kinematics (349-D) from video or frames using rtmlib."""
+
+    def __init__(
+        self,
+        *,
+        mode: str = "lightweight",
+        device: str = "cpu",
+        backend: str = "onnxruntime",
+        conf_threshold: float = 0.15,
+        wholebody_instance: Any = None,
+    ) -> None:
+        self.mode = mode
+        self.device = device
+        self.backend = backend
+        self.conf_threshold = conf_threshold
+        self._wholebody = wholebody_instance
+
+    @property
+    def wholebody(self) -> Any:
+        if self._wholebody is None:
+            try:
+                from rtmlib import Wholebody
+
+                self._wholebody = Wholebody(
+                    mode=self.mode,
+                    backend=self.backend,
+                    device=self.device,
+                )
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Failed to initialize rtmlib Wholebody detector: {exc}"
+                ) from exc
+        return self._wholebody
+
+    def extract_from_frames(
+        self,
+        frames: list[np.ndarray] | np.ndarray,
+        *,
+        frame_width: int | None = None,
+        frame_height: int | None = None,
+    ) -> np.ndarray:
+        """Extract and normalize (T, 349) pose features from a sequence of BGR frames."""
+        frame_list = list(frames)
+        if not frame_list:
+            raise ValueError("No frames provided for pose extraction.")
+
+        first_frame = frame_list[0]
+        h = int(frame_height or first_frame.shape[0])
+        w = int(frame_width or first_frame.shape[1])
+        t_len = len(frame_list)
+
+        kpts_seq = np.zeros((t_len, 133, 2), dtype=np.float32)
+        scores_seq = np.zeros((t_len, 133), dtype=np.float32)
+
+        detector = self.wholebody
+        for i, frame in enumerate(frame_list):
+            if frame is None or frame.size == 0:
+                continue
+            kpts, scores = detector(frame)
+            pk, ps = select_primary_signer(kpts, scores)
+            kpts_seq[i] = pk
+            scores_seq[i] = ps
+
+        return normalize_asl_keypoints_sequence(
+            kpts_seq,
+            scores_seq,
+            frame_width=w,
+            frame_height=h,
+            conf_threshold=self.conf_threshold,
+        )
+
+    def extract_from_video(
+        self,
+        video_path: str | Path,
+        *,
+        num_frames: int = 32,
+        frame_start: Any = 1,
+        frame_end: Any = -1,
+        metadata_fps: float | None = 25.0,
+    ) -> np.ndarray:
+        """Decode video segment and extract (T, 349) normalized pose kinematics."""
+        from src.preprocessing.video import decode_video_segment_bgr
+
+        frames, _, _, _ = decode_video_segment_bgr(
+            video_path=video_path,
+            frame_start=frame_start,
+            frame_end=frame_end,
+            metadata_fps=metadata_fps,
+            num_frames=num_frames,
+            strict_bounds=False,
+        )
+        return self.extract_from_frames(frames)
+
 

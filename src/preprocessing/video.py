@@ -36,6 +36,11 @@ def _open_capture_with_retry(
             fc = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
             if fc > 0:
                 return cap
+            # Live recorded container (e.g. browser WebM) where header lacks frame_count
+            ret, _ = cap.read()
+            if ret:
+                cap.release()
+                return cv2.VideoCapture(str(path))
         cap.release()
         last_cap = None
         if attempt + 1 < retries:
@@ -84,9 +89,9 @@ def probe_video(
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
         ok, frame = cap.read()
         valid = bool(
-            ok and frame is not None and width > 0 and height > 0 and frame_count > 0
+            ok and frame is not None and width > 0 and height > 0
         )
-        duration = (frame_count / fps) if fps > 0 else 0.0
+        duration = (frame_count / fps) if fps > 0 and frame_count > 0 else 0.0
         return {
             "path": str(path),
             "readable": valid,
@@ -128,8 +133,31 @@ def decode_video_segment_bgr(
     try:
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
         actual_fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+
+        # Fallback for live browser WebM/fragmented recordings where container lacks frame_count
         if total_frames <= 0:
-            raise VideoReadError(f"Video reports zero frames: {path}")
+            all_frames: list[np.ndarray] = []
+            while True:
+                ok, frame = cap.read()
+                if not ok or frame is None:
+                    break
+                all_frames.append(frame)
+
+            if not all_frames:
+                raise VideoReadError(f"Video reports zero frames: {path}")
+
+            t_len = len(all_frames)
+            indices = sample_frame_indices(0, t_len - 1, num_frames=num_frames)
+            sampled = [all_frames[int(i)] for i in indices]
+            bounds = SegmentBounds(
+                start_idx=0,
+                end_idx=t_len - 1,
+                annotation_type="live_stream",
+                fps_converted=False,
+                clamped_end=False,
+                overflow_frames=0,
+            )
+            return sampled, indices, bounds, actual_fps if actual_fps > 0 else 25.0
 
         bounds = resolve_segment_bounds(
             total_frames=total_frames,
