@@ -78,7 +78,9 @@ yarn-error.log*
 # ==================================================
 # Datasets, Cache Arrays & Video Files
 # ==================================================
-data/
+/data/
+!src/data/
+!src/data/**
 drive/
 raw_videos/
 videos/
