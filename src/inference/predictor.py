@@ -36,7 +36,9 @@ class ASLInferenceService:
         self.device = device
         self.model_type = model_type
         self.vocab_text_embeddings = (
-            vocab_text_embeddings.to(device) if vocab_text_embeddings is not None else None
+            vocab_text_embeddings.to(device)
+            if vocab_text_embeddings is not None
+            else None
         )
         self.backbone = backbone.to(device).eval() if backbone is not None else None
         self._pose_extractor = pose_extractor
@@ -64,9 +66,7 @@ class ASLInferenceService:
         if not ckpt_path.is_file():
             raise FileNotFoundError(f"Trained checkpoint not found: {ckpt_path}")
 
-        resolved_device = (
-            torch.device(device) if device is not None else get_device()
-        )
+        resolved_device = torch.device(device) if device is not None else get_device()
         ckpt = torch.load(ckpt_path, map_location=resolved_device, weights_only=False)
 
         state_dict = ckpt["model_state_dict"]
@@ -77,7 +77,9 @@ class ASLInferenceService:
         elif raw_c2i is not None:
             id_to_class = {int(v): str(k) for k, v in raw_c2i.items()}
         else:
-            raise ValueError("Checkpoint missing 'id_to_class' / 'class_to_id' mapping.")
+            raise ValueError(
+                "Checkpoint missing 'id_to_class' / 'class_to_id' mapping."
+            )
 
         num_classes = len(id_to_class)
         cfg = ckpt.get("config", {})
@@ -90,9 +92,8 @@ class ASLInferenceService:
             any(k.startswith("pose_encoder.") for k in state_dict)
             or "pose_dim" in model_cfg
         )
-        is_multimodal = (
-            "text_projection.net.1.weight" in state_dict
-            or any(k.startswith("text_projection.") for k in state_dict)
+        is_multimodal = "text_projection.net.1.weight" in state_dict or any(
+            k.startswith("text_projection.") for k in state_dict
         )
 
         vocab_tensor = None
@@ -111,9 +112,13 @@ class ASLInferenceService:
                 )
 
         if is_pose:
-            from src.models.multimodal.pose_multimodal_model import PoseVisualMultimodalModel
+            from src.models.multimodal.pose_multimodal_model import (
+                PoseVisualMultimodalModel,
+            )
 
-            mode = str(model_cfg.get("mode", "pose_language" if is_multimodal else "pose_only"))
+            mode = str(
+                model_cfg.get("mode", "pose_language" if is_multimodal else "pose_only")
+            )
             backbone_type = str(model_cfg.get("backbone", "transformer"))
             use_cos = bool(
                 model_cfg.get("use_cosine_classifier", False)
@@ -138,7 +143,9 @@ class ASLInferenceService:
             model = MultimodalASLModel(
                 num_classes=num_classes,
                 visual_feature_dim=int(model_cfg.get("feature_dim", 2048)),
-                temporal_hidden_dim=int(model_cfg.get("hidden_size", model_cfg.get("hidden_dim", 256))),
+                temporal_hidden_dim=int(
+                    model_cfg.get("hidden_size", model_cfg.get("hidden_dim", 256))
+                ),
                 temporal_layers=int(model_cfg.get("num_layers", 2)),
                 temporal_type=str(model_cfg.get("temporal", "lstm")),
                 bidirectional=bool(model_cfg.get("bidirectional", False)),
@@ -162,7 +169,9 @@ class ASLInferenceService:
             model = VisualClassifier(
                 num_classes=num_classes,
                 feature_dim=int(model_cfg.get("feature_dim", 2048)),
-                hidden_dim=int(model_cfg.get("hidden_size", model_cfg.get("hidden_dim", 256))),
+                hidden_dim=int(
+                    model_cfg.get("hidden_size", model_cfg.get("hidden_dim", 256))
+                ),
                 num_layers=int(model_cfg.get("num_layers", 2)),
                 dropout=float(model_cfg.get("dropout", 0.3)),
                 temporal_type=str(model_cfg.get("temporal", "lstm")),
@@ -208,7 +217,9 @@ class ASLInferenceService:
         if self.model_type.startswith("pose_"):
             if "language" in self.model_type:
                 if self.vocab_text_embeddings is None:
-                    raise RuntimeError("Multimodal pose model missing vocabulary embeddings.")
+                    raise RuntimeError(
+                        "Multimodal pose model missing vocabulary embeddings."
+                    )
                 out = self.model(x, vocab_text_embeddings=self.vocab_text_embeddings)
             else:
                 out = self.model(x)
@@ -347,12 +358,14 @@ class ASLInferenceService:
         class_to_id = {v.lower(): k for k, v in self.id_to_class.items()}
         if query_str in class_to_id:
             cid = class_to_id[query_str]
-            matches.append({
-                "class_id": cid,
-                "gloss": self.id_to_class[cid],
-                "similarity": 1.0,
-                "exact_match": True,
-            })
+            matches.append(
+                {
+                    "class_id": cid,
+                    "gloss": self.id_to_class[cid],
+                    "similarity": 1.0,
+                    "exact_match": True,
+                }
+            )
 
         # 2. Semantic text retrieval if vocabulary embeddings are available
         if self.vocab_text_embeddings is not None and len(matches) < k:
@@ -361,11 +374,15 @@ class ASLInferenceService:
                 if encoder is None:
                     from sentence_transformers import SentenceTransformer
 
-                    encoder = SentenceTransformer("all-MiniLM-L6-v2", device=str(self.device))
+                    encoder = SentenceTransformer(
+                        "all-MiniLM-L6-v2", device=str(self.device)
+                    )
                     self.text_encoder = encoder
 
                 q_emb = encoder.encode(
-                    [f"An American Sign Language sign representing the word '{query_str}'"],
+                    [
+                        f"An American Sign Language sign representing the word '{query_str}'"
+                    ],
                     convert_to_tensor=True,
                     device=str(self.device),
                 )
@@ -384,15 +401,19 @@ class ASLInferenceService:
                 top_sims, top_ids = sims.topk(min(k * 2, len(sims)))
 
                 seen_cids = {m["class_id"] for m in matches}
-                for sim_val, cid_val in zip(top_sims.cpu().tolist(), top_ids.cpu().tolist()):
+                for sim_val, cid_val in zip(
+                    top_sims.cpu().tolist(), top_ids.cpu().tolist()
+                ):
                     cid = int(cid_val)
                     if cid not in seen_cids:
-                        matches.append({
-                            "class_id": cid,
-                            "gloss": self.id_to_class.get(cid, str(cid)),
-                            "similarity": float(sim_val),
-                            "exact_match": False,
-                        })
+                        matches.append(
+                            {
+                                "class_id": cid,
+                                "gloss": self.id_to_class.get(cid, str(cid)),
+                                "similarity": float(sim_val),
+                                "exact_match": False,
+                            }
+                        )
                         seen_cids.add(cid)
                     if len(matches) >= k:
                         break
@@ -404,12 +425,14 @@ class ASLInferenceService:
             seen_cids = {m["class_id"] for m in matches}
             for cid, gloss in sorted(self.id_to_class.items()):
                 if cid not in seen_cids and query_str in gloss.lower():
-                    matches.append({
-                        "class_id": cid,
-                        "gloss": gloss,
-                        "similarity": 0.8,
-                        "exact_match": False,
-                    })
+                    matches.append(
+                        {
+                            "class_id": cid,
+                            "gloss": gloss,
+                            "similarity": 0.8,
+                            "exact_match": False,
+                        }
+                    )
                     seen_cids.add(cid)
                 if len(matches) >= k:
                     break
@@ -419,12 +442,14 @@ class ASLInferenceService:
             seen_cids = {m["class_id"] for m in matches}
             for cid, gloss in sorted(self.id_to_class.items()):
                 if cid not in seen_cids:
-                    matches.append({
-                        "class_id": cid,
-                        "gloss": gloss,
-                        "similarity": 0.0,
-                        "exact_match": False,
-                    })
+                    matches.append(
+                        {
+                            "class_id": cid,
+                            "gloss": gloss,
+                            "similarity": 0.0,
+                            "exact_match": False,
+                        }
+                    )
                     seen_cids.add(cid)
                 if len(matches) >= k:
                     break
@@ -487,7 +512,9 @@ class ASLEnsembleService:
 
         b_dir = Path(bundle_dir)
         if not b_dir.is_dir():
-            raise FileNotFoundError(f"Production model bundle directory not found: {b_dir}")
+            raise FileNotFoundError(
+                f"Production model bundle directory not found: {b_dir}"
+            )
 
         cfg_path = b_dir / "ensemble_config.json"
         meta_path = b_dir / "production_metadata.json"
@@ -501,7 +528,9 @@ class ASLEnsembleService:
         if meta_path.is_file():
             meta_data = json.loads(meta_path.read_text(encoding="utf-8"))
             if "id_to_class" in meta_data:
-                id_to_class = {int(k): str(v) for k, v in meta_data["id_to_class"].items()}
+                id_to_class = {
+                    int(k): str(v) for k, v in meta_data["id_to_class"].items()
+                }
 
         services: dict[str, ASLInferenceService] = {}
         for ckpt_file in sorted(b_dir.glob("*.pt")):
@@ -515,7 +544,9 @@ class ASLEnsembleService:
                 continue
 
         if not services:
-            raise RuntimeError(f"No valid checkpoints could be loaded from bundle: {b_dir}")
+            raise RuntimeError(
+                f"No valid checkpoints could be loaded from bundle: {b_dir}"
+            )
 
         return cls(services=services, weights=weights, id_to_class=id_to_class)
 
@@ -534,7 +565,10 @@ class ASLEnsembleService:
             w = self.weights.get(name, 1.0 / len(self.services))
             x = clip_tensor.to(srv.device)
             if srv.model_type.startswith("pose_"):
-                if "language" in srv.model_type and srv.vocab_text_embeddings is not None:
+                if (
+                    "language" in srv.model_type
+                    and srv.vocab_text_embeddings is not None
+                ):
                     out = srv.model(x, vocab_text_embeddings=srv.vocab_text_embeddings)
                 else:
                     out = srv.model(x)
@@ -633,6 +667,6 @@ class ASLEnsembleService:
         for srv in self.services.values():
             if "language" in srv.model_type and srv.vocab_text_embeddings is not None:
                 return srv.retrieve_sign_from_text(query, top_k=top_k)
-        return next(iter(self.services.values())).retrieve_sign_from_text(query, top_k=top_k)
-
-
+        return next(iter(self.services.values())).retrieve_sign_from_text(
+            query, top_k=top_k
+        )

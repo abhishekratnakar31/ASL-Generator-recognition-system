@@ -88,9 +88,7 @@ def probe_video(
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
         ok, frame = cap.read()
-        valid = bool(
-            ok and frame is not None and width > 0 and height > 0
-        )
+        valid = bool(ok and frame is not None and width > 0 and height > 0)
         duration = (frame_count / fps) if fps > 0 and frame_count > 0 else 0.0
         return {
             "path": str(path),
@@ -201,9 +199,7 @@ def decode_video_segment_bgr(
             current += 1
 
         if not decoded:
-            raise VideoReadError(
-                f"No frames decoded in segment {bounds} from {path}"
-            )
+            raise VideoReadError(f"No frames decoded in segment {bounds} from {path}")
 
         ordered_frames: list[np.ndarray] = []
         last_valid: np.ndarray | None = None
@@ -242,7 +238,8 @@ def preprocess_video(
     seek_preroll: int | None = ...,
     open_retries: int = ...,
     return_tensor: Literal[True] = ...,
-) -> "torch.Tensor": ...
+) -> "torch.Tensor":
+    pass
 
 
 @overload
@@ -260,7 +257,8 @@ def preprocess_video(
     seek_preroll: int | None = ...,
     open_retries: int = ...,
     return_tensor: Literal[False],
-) -> np.ndarray: ...
+) -> np.ndarray:
+    pass
 
 
 @overload
@@ -278,7 +276,8 @@ def preprocess_video(
     seek_preroll: int | None = ...,
     open_retries: int = ...,
     return_tensor: bool = ...,
-) -> "torch.Tensor | np.ndarray": ...
+) -> "torch.Tensor | np.ndarray":
+    pass
 
 
 def preprocess_video(

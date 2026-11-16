@@ -6,9 +6,13 @@ from typing import Any
 
 import numpy as np
 
-UPPER_BODY_INDICES = list(range(11))  # 0..10: nose, eyes, ears, shoulders, elbows, wrists
+UPPER_BODY_INDICES = list(
+    range(11)
+)  # 0..10: nose, eyes, ears, shoulders, elbows, wrists
 LEFT_HAND_INDICES = list(range(91, 112))  # 21 left-hand landmarks (91 = left wrist)
-RIGHT_HAND_INDICES = list(range(112, 133))  # 21 right-hand landmarks (112 = right wrist)
+RIGHT_HAND_INDICES = list(
+    range(112, 133)
+)  # 21 right-hand landmarks (112 = right wrist)
 ASL_KEYPOINT_INDICES = UPPER_BODY_INDICES + LEFT_HAND_INDICES + RIGHT_HAND_INDICES
 NUM_ASL_KEYPOINTS = len(ASL_KEYPOINT_INDICES)  # 53
 POSE_FEATURE_DIM = NUM_ASL_KEYPOINTS * 4 + 42 * 2 + NUM_ASL_KEYPOINTS  # 349
@@ -62,7 +66,9 @@ def normalize_asl_keypoints_sequence(
     if kpts.ndim != 3 or kpts.shape[1] < 133 or kpts.shape[2] < 2:
         raise ValueError(f"Expected (T, >=133, >=2) keypoints, got {kpts.shape}")
     if scores.shape[:2] != kpts.shape[:2]:
-        raise ValueError(f"Score shape {scores.shape} != keypoint shape {kpts.shape[:2]}")
+        raise ValueError(
+            f"Score shape {scores.shape} != keypoint shape {kpts.shape[:2]}"
+        )
 
     t_len = kpts.shape[0]
     sel_xy = kpts[:, ASL_KEYPOINT_INDICES, :2]  # (T, 53, 2)
@@ -175,7 +181,7 @@ def augment_pose_sequence(
         ).astype(np.float32)
 
     if joint_dropout > 0:
-        drop = (gen.random((t_len, NUM_ASL_KEYPOINTS)) < joint_dropout)
+        drop = gen.random((t_len, NUM_ASL_KEYPOINTS)) < joint_dropout
         aug[:, POSE_FEATURE_DIM - NUM_ASL_KEYPOINTS :][drop] = 0.0
 
     # Recompute velocity slice from resampled/jittered coordinates for consistency
@@ -300,5 +306,3 @@ class PoseExtractor:
             strict_bounds=False,
         )
         return self.extract_from_frames(frames)
-
-

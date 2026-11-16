@@ -32,7 +32,9 @@ class TemporalLSTM(nn.Module):
     ) -> None:
         super().__init__()
         if pooling not in {"last", "mean", "attention"}:
-            raise ValueError(f"Unsupported pooling='{pooling}'; choose last, mean, or attention.")
+            raise ValueError(
+                f"Unsupported pooling='{pooling}'; choose last, mean, or attention."
+            )
 
         self.input_proj = nn.Sequential(
             nn.LayerNorm(input_dim),
@@ -54,7 +56,9 @@ class TemporalLSTM(nn.Module):
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:
         if features.ndim != 3:
-            raise ValueError(f"Expected 3D features (B, T, D), got {tuple(features.shape)}")
+            raise ValueError(
+                f"Expected 3D features (B, T, D), got {tuple(features.shape)}"
+            )
         x = self.input_proj(features)
         sequence, (hidden, _) = self.lstm(x)
         if self.pooling == "mean":
@@ -84,7 +88,9 @@ class TemporalTransformerEncoder(nn.Module):
     ) -> None:
         super().__init__()
         if pooling not in {"mean", "attention"}:
-            raise ValueError(f"Unsupported pooling='{pooling}'; choose mean or attention.")
+            raise ValueError(
+                f"Unsupported pooling='{pooling}'; choose mean or attention."
+            )
 
         self.input_proj = nn.Sequential(
             nn.LayerNorm(input_dim),
@@ -125,7 +131,9 @@ class TemporalTransformerEncoder(nn.Module):
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:
         if features.ndim != 3:
-            raise ValueError(f"Expected 3D features (B, T, D), got {tuple(features.shape)}")
+            raise ValueError(
+                f"Expected 3D features (B, T, D), got {tuple(features.shape)}"
+            )
         t_len = features.size(1)
         x = self.input_proj(features) + self.pos_encoding[:, :t_len, :]
         encoded = self.norm(self.encoder(x))

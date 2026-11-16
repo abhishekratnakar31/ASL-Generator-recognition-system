@@ -36,7 +36,11 @@ def symmetric_infonce_loss(
             f"text {tuple(text_embeddings.shape)}"
         )
 
-    scale = logit_scale if isinstance(logit_scale, torch.Tensor) else torch.tensor(logit_scale)
+    scale = (
+        logit_scale
+        if isinstance(logit_scale, torch.Tensor)
+        else torch.tensor(logit_scale)
+    )
     logits = scale * (visual_embeddings @ text_embeddings.T)
     batch_size = logits.size(0)
 

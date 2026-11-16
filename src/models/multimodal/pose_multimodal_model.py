@@ -7,7 +7,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from src.models.language.language_encoder import TextProjectionHead
-from src.models.visual.lstm import TemporalAttentionPool, TemporalLSTM, TemporalTransformerEncoder
+from src.models.visual.lstm import (
+    TemporalAttentionPool,
+    TemporalTransformerEncoder,
+)
 
 
 class CosineClassifier(nn.Module):
@@ -123,14 +126,16 @@ class PoseVisualMultimodalModel(nn.Module):
             )
 
         if mode == "pose_visual_language":
-            self.visual_encoder: TemporalTransformerEncoder | None = TemporalTransformerEncoder(
-                input_dim=visual_dim,
-                embed_dim=hidden_dim,
-                num_layers=num_layers,
-                num_heads=num_heads,
-                dim_feedforward=hidden_dim * 2,
-                dropout=dropout,
-                pooling="attention",
+            self.visual_encoder: TemporalTransformerEncoder | None = (
+                TemporalTransformerEncoder(
+                    input_dim=visual_dim,
+                    embed_dim=hidden_dim,
+                    num_layers=num_layers,
+                    num_heads=num_heads,
+                    dim_feedforward=hidden_dim * 2,
+                    dropout=dropout,
+                    pooling="attention",
+                )
             )
             self.stream_gate: nn.Module | None = nn.Sequential(
                 nn.Linear(hidden_dim * 2, hidden_dim),
@@ -164,7 +169,9 @@ class PoseVisualMultimodalModel(nn.Module):
                 normalize=True,
             )
             self.logit_scale = nn.Parameter(
-                torch.tensor(math.log(1.0 / max(init_temperature, 1e-3)), dtype=torch.float32)
+                torch.tensor(
+                    math.log(1.0 / max(init_temperature, 1e-3)), dtype=torch.float32
+                )
             )
             self.lang_fusion_gate: nn.Module | None = nn.Sequential(
                 nn.Linear(embed_dim * 2, embed_dim),
@@ -194,7 +201,11 @@ class PoseVisualMultimodalModel(nn.Module):
         """Encode pose sequences (and optional visual sequences) into (B, hidden_dim)."""
         pose_repr = self.pose_encoder(pose_inputs)
         if self.mode == "pose_visual_language":
-            if visual_inputs is None or self.visual_encoder is None or self.stream_gate is None:
+            if (
+                visual_inputs is None
+                or self.visual_encoder is None
+                or self.stream_gate is None
+            ):
                 raise ValueError("visual_inputs required in pose_visual_language mode.")
             vis_repr = self.visual_encoder(visual_inputs)
             gate = self.stream_gate(torch.cat([pose_repr, vis_repr], dim=-1))
@@ -221,7 +232,9 @@ class PoseVisualMultimodalModel(nn.Module):
             or self.lang_fusion_gate is None
             or self.fused_head is None
         ):
-            raise ValueError("vocab_text_embeddings required for multimodal pose modes.")
+            raise ValueError(
+                "vocab_text_embeddings required for multimodal pose modes."
+            )
 
         vis_emb = F.normalize(self.motion_projection(repr_vec), p=2, dim=-1)
         txt_emb = self.text_projection(vocab_text_embeddings)
@@ -241,4 +254,3 @@ class PoseVisualMultimodalModel(nn.Module):
             "text_embeddings": txt_emb,
             "logit_scale": scale,
         }
-

@@ -120,7 +120,10 @@ def augment_video_frames_np(
         left = int(gen.integers(0, w - crop_w + 1)) if w > crop_w else 0
         cropped = clip[:, top : top + crop_h, left : left + crop_w, :]
         clip = np.stack(
-            [cv2.resize(cropped[i], (w, h), interpolation=cv2.INTER_LINEAR) for i in range(t_len)],
+            [
+                cv2.resize(cropped[i], (w, h), interpolation=cv2.INTER_LINEAR)
+                for i in range(t_len)
+            ],
             axis=0,
         )
 

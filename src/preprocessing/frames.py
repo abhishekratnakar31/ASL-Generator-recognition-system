@@ -112,9 +112,7 @@ def resolve_segment_bounds(
             f"(raw=({raw_start}, {raw_end}), fps_scale={fps_scale:.4f})."
         )
     if end_idx < start_idx:
-        raise SegmentBoundsError(
-            f"Resolved end_idx={end_idx} < start_idx={start_idx}."
-        )
+        raise SegmentBoundsError(f"Resolved end_idx={end_idx} < start_idx={start_idx}.")
 
     overflow = max(0, end_idx - (total_frames - 1))
     clamped = overflow > 0
@@ -157,9 +155,7 @@ def normalize_rgb_frames(
 ) -> np.ndarray:
     """Convert uint8/float RGB frames (T, H, W, 3) into ImageNet-normalized (T, 3, H, W)."""
     if frames_rgb.ndim != 4 or frames_rgb.shape[-1] != 3:
-        raise ValueError(
-            f"Expected shape (T, H, W, 3), got {frames_rgb.shape}."
-        )
+        raise ValueError(f"Expected shape (T, H, W, 3), got {frames_rgb.shape}.")
     arr = frames_rgb.astype(np.float32) / 255.0
     arr = (arr - mean.reshape(1, 1, 1, 3)) / std.reshape(1, 1, 1, 3)
     return np.transpose(arr, (0, 3, 1, 2)).astype(np.float32, copy=False)

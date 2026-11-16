@@ -46,7 +46,11 @@ def main() -> None:
             if p.is_file() and p.suffix.lower() in exts
         }
         for split_name, df in [("train", train_df), ("val", val_df), ("test", test_df)]:
-            col = "video_id_normalized" if "video_id_normalized" in df.columns else "video_id"
+            col = (
+                "video_id_normalized"
+                if "video_id_normalized" in df.columns
+                else "video_id"
+            )
             expected = set(df[col].map(normalize_video_id))
             found = len(expected & on_disk)
             print(f"{split_name}: {found}/{len(expected)} videos present in {vdir}")

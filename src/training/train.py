@@ -29,7 +29,9 @@ def load_yaml_config(config_path: str | Path) -> dict[str, Any]:
     return cfg
 
 
-def _build_optimizer(model: torch.nn.Module, train_cfg: dict[str, Any]) -> torch.optim.Optimizer:
+def _build_optimizer(
+    model: torch.nn.Module, train_cfg: dict[str, Any]
+) -> torch.optim.Optimizer:
     name = str(train_cfg.get("optimizer", "AdamW")).lower()
     lr = float(train_cfg.get("learning_rate", 1e-3))
     wd = float(train_cfg.get("weight_decay", 1e-4))
@@ -47,7 +49,9 @@ def _build_scheduler(optimizer: torch.optim.Optimizer, train_cfg: dict[str, Any]
     sched = str(train_cfg.get("scheduler", "cosine")).lower()
     epochs = int(train_cfg.get("epochs", 40))
     if sched in {"cosine", "cosineannealinglr"}:
-        return torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs))
+        return torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=max(1, epochs)
+        )
     if sched in {"plateau", "reducelronplateau"}:
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", factor=0.5, patience=3, min_lr=1e-6
@@ -114,7 +118,9 @@ def run_training_from_config(config_path: str | Path) -> dict[str, Any]:
     batch_size = int(train_cfg.get("batch_size", 32))
     use_sampler = bool(train_cfg.get("balanced_sampling", False))
     sampler = (
-        build_weighted_sampler(y_train, power=float(train_cfg.get("sampler_power", 0.5)))
+        build_weighted_sampler(
+            y_train, power=float(train_cfg.get("sampler_power", 0.5))
+        )
         if use_sampler
         else None
     )
@@ -138,7 +144,9 @@ def run_training_from_config(config_path: str | Path) -> dict[str, Any]:
     class_weights = None
     if bool(train_cfg.get("class_weighted_loss", False)):
         weights_np = compute_inverse_frequency_weights(
-            y_train, num_classes=num_classes, power=float(train_cfg.get("weight_power", 0.5))
+            y_train,
+            num_classes=num_classes,
+            power=float(train_cfg.get("weight_power", 0.5)),
         )
         class_weights = torch.tensor(weights_np, dtype=torch.float32, device=device)
 
@@ -202,7 +210,10 @@ def run_training_from_config(config_path: str | Path) -> dict[str, Any]:
         seed=seed,
     )
 
-    output_dir = Path(train_cfg.get("checkpoint_dir", "models/checkpoints")) / trainer_cfg.experiment_id
+    output_dir = (
+        Path(train_cfg.get("checkpoint_dir", "models/checkpoints"))
+        / trainer_cfg.experiment_id
+    )
     return train_model(
         model=model,
         train_loader=train_loader,
@@ -221,11 +232,15 @@ def run_training_from_config(config_path: str | Path) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train ASL visual or multimodal model.")
+    parser = argparse.ArgumentParser(
+        description="Train ASL visual or multimodal model."
+    )
     parser.add_argument("--config", required=True, help="Path to YAML training config.")
     args = parser.parse_args()
     result = run_training_from_config(args.config)
-    print(f"Training completed. Best epoch: {result['best_epoch']} | Best checkpoint: {result['best_checkpoint']}")
+    print(
+        f"Training completed. Best epoch: {result['best_epoch']} | Best checkpoint: {result['best_checkpoint']}"
+    )
 
 
 if __name__ == "__main__":

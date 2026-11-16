@@ -126,7 +126,9 @@ class MultimodalASLModel(nn.Module):
             normalize=True,
         )
         self.logit_scale = nn.Parameter(
-            torch.tensor(math.log(1.0 / max(init_temperature, 1e-3)), dtype=torch.float32)
+            torch.tensor(
+                math.log(1.0 / max(init_temperature, 1e-3)), dtype=torch.float32
+            )
         )
 
         # Closed-vocabulary head for hybrid or cross-modal gated fusion
@@ -153,7 +155,9 @@ class MultimodalASLModel(nn.Module):
         elif visual_inputs.ndim == 3:
             seq = visual_inputs
         else:
-            raise ValueError(f"Expected 5D or 3D visual input, got {tuple(visual_inputs.shape)}")
+            raise ValueError(
+                f"Expected 5D or 3D visual input, got {tuple(visual_inputs.shape)}"
+            )
         return self.temporal_encoder(seq)
 
     def encode_video(self, visual_inputs: torch.Tensor) -> torch.Tensor:
@@ -185,7 +189,10 @@ class MultimodalASLModel(nn.Module):
             cls_logits = cosine_logits
         elif self.fusion_mode == "hybrid":
             vis_logits = self.visual_classifier(repr_vec)
-            cls_logits = self.fusion_alpha * cosine_logits + (1.0 - self.fusion_alpha) * vis_logits
+            cls_logits = (
+                self.fusion_alpha * cosine_logits
+                + (1.0 - self.fusion_alpha) * vis_logits
+            )
         else:
             # Cross-modal gated fusion: attend over language prototypes using visual query
             assert self.fusion_gate is not None and self.fused_classifier is not None
@@ -193,7 +200,9 @@ class MultimodalASLModel(nn.Module):
             lang_context = attn_weights @ text_emb
             gate = self.fusion_gate(torch.cat([visual_emb, lang_context], dim=-1))
             fused = gate * visual_emb + (1.0 - gate) * lang_context
-            cls_logits = self.fused_classifier(fused) + self.fusion_alpha * cosine_logits
+            cls_logits = (
+                self.fused_classifier(fused) + self.fusion_alpha * cosine_logits
+            )
 
         return {
             "logits": cls_logits,

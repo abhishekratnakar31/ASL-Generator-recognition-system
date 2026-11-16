@@ -175,9 +175,7 @@ def compute_retrieval_metrics(
     for row_idx, order in enumerate(ranked_indices):
         matches = np.flatnonzero(g_lbl[order] == q_lbl[row_idx])
         if len(matches) == 0:
-            raise ValueError(
-                f"Query label {q_lbl[row_idx]} has no match in gallery."
-            )
+            raise ValueError(f"Query label {q_lbl[row_idx]} has no match in gallery.")
         ranks.append(int(matches[0]) + 1)
 
     ranks_arr = np.asarray(ranks, dtype=np.float64)

@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import torch
 from torch.utils.data import DataLoader
 
 from src.data.dataset import CachedFeatureDataset
@@ -22,9 +21,13 @@ def main() -> None:
     parser.add_argument("--metadata-csv", required=True, help="Evaluation split CSV.")
     parser.add_argument("--cache-dir", required=True, help="Feature cache directory.")
     parser.add_argument("--split", default="val", choices=["train", "val", "test"])
-    parser.add_argument("--vocab-embeddings", default=None, help="Optional text embeddings .pt")
+    parser.add_argument(
+        "--vocab-embeddings", default=None, help="Optional text embeddings .pt"
+    )
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--output-json", default=None, help="Optional metrics JSON path.")
+    parser.add_argument(
+        "--output-json", default=None, help="Optional metrics JSON path."
+    )
     args = parser.parse_args()
 
     device = get_device()

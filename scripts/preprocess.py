@@ -17,9 +17,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Extract segment-aware ResNet50 features into a new directory."
     )
-    parser.add_argument("--metadata-csv", required=True, help="Split metadata CSV path.")
-    parser.add_argument("--videos-dir", required=True, help="Directory with video files.")
-    parser.add_argument("--output-dir", required=True, help="Destination cache directory.")
+    parser.add_argument(
+        "--metadata-csv", required=True, help="Split metadata CSV path."
+    )
+    parser.add_argument(
+        "--videos-dir", required=True, help="Directory with video files."
+    )
+    parser.add_argument(
+        "--output-dir", required=True, help="Destination cache directory."
+    )
     parser.add_argument("--split", default="val", help="Split label for output files.")
     parser.add_argument("--num-frames", type=int, default=32)
     parser.add_argument("--image-size", type=int, default=224)
@@ -48,7 +54,9 @@ def main() -> None:
     )
     done = np.zeros(len(df), dtype=bool)
     labels = df["class_id"].to_numpy(dtype=np.int64)
-    id_col = "video_id_normalized" if "video_id_normalized" in df.columns else "video_id"
+    id_col = (
+        "video_id_normalized" if "video_id_normalized" in df.columns else "video_id"
+    )
 
     with torch.inference_mode():
         for row_idx, (_, row) in enumerate(

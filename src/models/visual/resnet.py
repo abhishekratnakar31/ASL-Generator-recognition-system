@@ -36,7 +36,9 @@ class ResNet50Backbone(nn.Module):
         self.frame_chunk_size = int(frame_chunk_size)
         self.freeze_batchnorm = bool(freeze_batchnorm)
 
-        self.set_trainable_blocks(frozen=frozen, unfreeze_last_blocks=unfreeze_last_blocks)
+        self.set_trainable_blocks(
+            frozen=frozen, unfreeze_last_blocks=unfreeze_last_blocks
+        )
 
     def set_trainable_blocks(
         self,
@@ -53,7 +55,11 @@ class ResNet50Backbone(nn.Module):
             return
 
         stages = [self.layer4, self.layer3, self.layer2, self.layer1, self.stem]
-        n_unfreeze = len(stages) if not frozen and unfreeze_last_blocks <= 0 else unfreeze_last_blocks
+        n_unfreeze = (
+            len(stages)
+            if not frozen and unfreeze_last_blocks <= 0
+            else unfreeze_last_blocks
+        )
         for stage in stages[: max(0, min(n_unfreeze, len(stages)))]:
             for param in stage.parameters():
                 param.requires_grad = True
@@ -78,11 +84,15 @@ class ResNet50Backbone(nn.Module):
     def forward(self, videos: torch.Tensor) -> torch.Tensor:
         """Encode (B, T, C, H, W) video tensor into (B, T, 2048) features."""
         if videos.ndim != 5:
-            raise ValueError(f"Expected 5D tensor (B, T, C, H, W), got {tuple(videos.shape)}")
+            raise ValueError(
+                f"Expected 5D tensor (B, T, C, H, W), got {tuple(videos.shape)}"
+            )
         b, t, c, h, w = videos.shape
         frames = videos.reshape(b * t, c, h, w)
 
-        has_grad = any(p.requires_grad for p in self.parameters()) and torch.is_grad_enabled()
+        has_grad = (
+            any(p.requires_grad for p in self.parameters()) and torch.is_grad_enabled()
+        )
         chunks = []
         ctx = torch.enable_grad() if has_grad else torch.no_grad()
         with ctx:
