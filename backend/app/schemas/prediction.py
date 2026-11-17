@@ -62,7 +62,9 @@ class SignRetrievalMatch(BaseModel):
 class TextToSignRequest(BaseModel):
     """Text prompt or query for the ASL Generator."""
 
-    query: str = Field(..., min_length=1, max_length=200, description="English word or phrase.")
+    query: str = Field(
+        ..., min_length=1, max_length=200, description="English word or phrase."
+    )
     top_k: int = Field(default=5, ge=1, le=20)
 
 

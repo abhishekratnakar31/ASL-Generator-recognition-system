@@ -33,14 +33,20 @@ else:
 
 def test_resolve_segment_bounds_full_video():
     bounds = resolve_segment_bounds(
-        total_frames=100, frame_start=1, frame_end=-1, metadata_fps=25.0, actual_fps=29.97
+        total_frames=100,
+        frame_start=1,
+        frame_end=-1,
+        metadata_fps=25.0,
+        actual_fps=29.97,
     )
     assert bounds.start_idx == 0
     assert bounds.end_idx == 99
     assert bounds.annotation_type == "full_video"
     assert not bounds.fps_converted
 
-    bounds_nan = resolve_segment_bounds(total_frames=50, frame_start=np.nan, frame_end=np.nan)
+    bounds_nan = resolve_segment_bounds(
+        total_frames=50, frame_start=np.nan, frame_end=np.nan
+    )
     assert (bounds_nan.start_idx, bounds_nan.end_idx) == (0, 49)
 
 
@@ -92,12 +98,21 @@ def test_resolve_segment_bounds_errors_and_clamping():
 
     with pytest.raises(SegmentBoundsError):
         resolve_segment_bounds(
-            total_frames=100, frame_start=150, frame_end=180, metadata_fps=25.0, actual_fps=25.0
+            total_frames=100,
+            frame_start=150,
+            frame_end=180,
+            metadata_fps=25.0,
+            actual_fps=25.0,
         )
 
     # Minor rounding overflow (<= 5 frames) clamps cleanly
     b_minor = resolve_segment_bounds(
-        total_frames=100, frame_start=80, frame_end=103, metadata_fps=25.0, actual_fps=25.0, strict=True
+        total_frames=100,
+        frame_start=80,
+        frame_end=103,
+        metadata_fps=25.0,
+        actual_fps=25.0,
+        strict=True,
     )
     assert b_minor.end_idx == 99
     assert b_minor.clamped_end
@@ -106,10 +121,20 @@ def test_resolve_segment_bounds_errors_and_clamping():
     # Larger overflow raises in strict=True, clamps in strict=False
     with pytest.raises(SegmentBoundsError):
         resolve_segment_bounds(
-            total_frames=100, frame_start=80, frame_end=120, metadata_fps=25.0, actual_fps=25.0, strict=True
+            total_frames=100,
+            frame_start=80,
+            frame_end=120,
+            metadata_fps=25.0,
+            actual_fps=25.0,
+            strict=True,
         )
     b_relaxed = resolve_segment_bounds(
-        total_frames=100, frame_start=80, frame_end=120, metadata_fps=25.0, actual_fps=25.0, strict=False
+        total_frames=100,
+        frame_start=80,
+        frame_end=120,
+        metadata_fps=25.0,
+        actual_fps=25.0,
+        strict=False,
     )
     assert b_relaxed.end_idx == 99
 
@@ -187,4 +212,3 @@ def test_opencv_segment_decode_bgr_to_rgb_and_corrupt(tmp_path: Path):
 def test_preprocess_bgr_frames_empty_raises():
     with pytest.raises(ValueError):
         preprocess_bgr_frames([])
-

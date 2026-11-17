@@ -53,7 +53,9 @@ def test_visual_and_multimodal_checkpoint_inference_roundtrip(tmp_path: Path):
     class_to_id = {"book": 0, "drink": 1, "computer": 2}
 
     # 1. Visual checkpoint roundtrip
-    vis_model = VisualClassifier(num_classes=3, feature_dim=32, hidden_dim=16, num_layers=1)
+    vis_model = VisualClassifier(
+        num_classes=3, feature_dim=32, hidden_dim=16, num_layers=1
+    )
     vis_ckpt = tmp_path / "vis.pt"
     torch.save(
         {
@@ -92,7 +94,9 @@ def test_visual_and_multimodal_checkpoint_inference_roundtrip(tmp_path: Path):
         fusion_mode="hybrid",
     )
     vocab_path = tmp_path / "vocab.pt"
-    torch.save({"text_embeddings": torch.randn(3, 24), "class_to_id": class_to_id}, vocab_path)
+    torch.save(
+        {"text_embeddings": torch.randn(3, 24), "class_to_id": class_to_id}, vocab_path
+    )
     mm_ckpt = tmp_path / "mm.pt"
     torch.save(
         {
@@ -114,7 +118,10 @@ def test_visual_and_multimodal_checkpoint_inference_roundtrip(tmp_path: Path):
         mm_ckpt,
     )
     mm_svc = ASLInferenceService.from_checkpoint(
-        mm_ckpt, vocab_embeddings_path=vocab_path, device="cpu", pretrained_backbone=False
+        mm_ckpt,
+        vocab_embeddings_path=vocab_path,
+        device="cpu",
+        pretrained_backbone=False,
     )
 
     vid_path = tmp_path / "clip.mp4"
@@ -181,4 +188,3 @@ def test_production_model_bundle_ensemble_roundtrip():
     assert res["predicted_gloss"] in ens.id_to_class.values()
     assert 0.0 <= res["confidence"] <= 1.0
     assert res["latency_ms"] >= 0.0
-

@@ -93,7 +93,9 @@ def test_sampler_weights_handle_zero_count_classes():
 
 def test_temporal_and_feature_augmentations():
     seq = np.arange(32 * 4, dtype=np.float32).reshape(32, 4)
-    cropped = temporal_crop_resample(seq, target_len=32, crop_ratio_range=(0.75, 0.9), rng=42)
+    cropped = temporal_crop_resample(
+        seq, target_len=32, crop_ratio_range=(0.75, 0.9), rng=42
+    )
     assert cropped.shape == (32, 4)
 
     idx = temporal_jitter_indices(32, max_shift=1, rng=7)

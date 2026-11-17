@@ -93,10 +93,14 @@ def test_parse_merge_and_build_signer_disjoint_splits(tmp_path: Path):
     paths = export_wlasl100_metadata(
         out_dir, train_df, val_df, test_df, master_df, c2i, i2c, audit
     )
-    loaded_c2i, loaded_i2c = load_class_mappings(paths["class_to_id"], paths["id_to_class"])
+    loaded_c2i, loaded_i2c = load_class_mappings(
+        paths["class_to_id"], paths["id_to_class"]
+    )
     assert loaded_c2i == c2i
     assert loaded_i2c == i2c
-    reval = validate_splits(train_df, val_df, test_df, loaded_c2i, allow_missing_train_classes=False)
+    reval = validate_splits(
+        train_df, val_df, test_df, loaded_c2i, allow_missing_train_classes=False
+    )
     assert reval["missing_train_classes"] == []
 
 
@@ -115,4 +119,3 @@ def test_merge_detects_gloss_mismatch_and_missing_signer(tmp_path: Path):
     lookup_missing.pop(first_vid)
     with pytest.raises(ValueError, match="missing signer_id"):
         merge_voxel51_with_wlasl_metadata(top_df, lookup_missing)
-

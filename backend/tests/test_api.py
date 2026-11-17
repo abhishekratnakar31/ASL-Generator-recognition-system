@@ -1,6 +1,5 @@
 """Integration and unit tests for FastAPI ASL recognition, pose streaming, and generation endpoints."""
 
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -20,7 +19,9 @@ class DummyModel(torch.nn.Module):
         super().__init__()
         self.linear = torch.nn.Linear(in_dim, num_classes)
 
-    def forward(self, x: torch.Tensor, vocab_text_embeddings: torch.Tensor | None = None) -> dict[str, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, vocab_text_embeddings: torch.Tensor | None = None
+    ) -> dict[str, torch.Tensor]:
         pooled = x.mean(dim=1)
         return {"logits": self.linear(pooled)}
 
@@ -61,7 +62,9 @@ def test_health_endpoint_unloaded(monkeypatch: pytest.MonkeyPatch):
     assert not data["model_loaded"]
 
 
-def test_health_endpoint_loaded(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_health_endpoint_loaded(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
     response = client.get("/health")
@@ -73,7 +76,9 @@ def test_health_endpoint_loaded(dummy_service: ASLInferenceService, monkeypatch:
     assert data["model_type"] == "pose_transformer_only"
 
 
-def test_list_classes_endpoint(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_list_classes_endpoint(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
@@ -93,7 +98,9 @@ def test_list_classes_endpoint(dummy_service: ASLInferenceService, monkeypatch: 
     assert search_data["classes"][0]["gloss"] == "language"
 
 
-def test_predict_pose_endpoint(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_predict_pose_endpoint(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
@@ -111,7 +118,9 @@ def test_predict_pose_endpoint(dummy_service: ASLInferenceService, monkeypatch: 
     assert data["latency_ms"] >= 0.0
 
 
-def test_generate_sign_endpoint(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_generate_sign_endpoint(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
@@ -130,7 +139,9 @@ def test_generate_sign_endpoint(dummy_service: ASLInferenceService, monkeypatch:
     assert res_empty.status_code == 422  # Pydantic validation error
 
 
-def test_predict_video_unsupported_format(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_predict_video_unsupported_format(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
@@ -140,7 +151,9 @@ def test_predict_video_unsupported_format(dummy_service: ASLInferenceService, mo
     assert "Unsupported video format" in res.json()["detail"]
 
 
-def test_predict_video_empty_file(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_predict_video_empty_file(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
@@ -150,11 +163,14 @@ def test_predict_video_empty_file(dummy_service: ASLInferenceService, monkeypatc
     assert "empty" in res.json()["detail"].lower()
 
 
-def test_predict_frames_endpoint(dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch):
+def test_predict_frames_endpoint(
+    dummy_service: ASLInferenceService, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(inference, "_SERVICE_INSTANCE", dummy_service)
     client = TestClient(app)
 
     import base64
+
     import cv2
 
     frames = []
@@ -170,7 +186,9 @@ def test_predict_frames_endpoint(dummy_service: ASLInferenceService, monkeypatch
             "predicted_gloss": "dark",
             "predicted_class_id": 3,
             "confidence": 0.95,
-            "top_k": [{"class_id": 3, "gloss": "dark", "confidence": 0.95, "score": 2.5}],
+            "top_k": [
+                {"class_id": 3, "gloss": "dark", "confidence": 0.95, "score": 2.5}
+            ],
             "model_type": "pose_transformer_only",
             "latency_ms": 12.3,
         }
@@ -209,5 +227,3 @@ def test_frontend_ui_serving():
     res_js = client.get("/frontend/app.js")
     assert res_js.status_code == 200
     assert "PERFECT_F1_CLASSES" in res_js.text
-
-

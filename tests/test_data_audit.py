@@ -18,6 +18,7 @@ from src.data.split import (
     validate_splits,
 )
 
+
 def _make_split_df(rows: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
@@ -31,7 +32,9 @@ def test_normalize_video_id_and_url():
         extract_canonical_url("https://www.youtube.com/watch?v=F5Wef1_PtLk&t=10s")
         == "youtube:F5Wef1_PtLk"
     )
-    assert extract_canonical_url("https://youtu.be/abcDEF12345") == "youtube:abcDEF12345"
+    assert (
+        extract_canonical_url("https://youtu.be/abcDEF12345") == "youtube:abcDEF12345"
+    )
 
 
 def test_load_class_mappings_valid_and_invalid(tmp_path: Path):
@@ -125,12 +128,16 @@ def test_validate_splits_detects_leakage_and_missing_classes():
         ]
     )
 
-    summary = validate_splits(train_df, val_df, test_df, c2i, allow_missing_train_classes=True)
+    summary = validate_splits(
+        train_df, val_df, test_df, c2i, allow_missing_train_classes=True
+    )
     assert summary["missing_train_classes"] == [2]
     assert not any(summary["signer_overlaps"].values())
 
     with pytest.raises(ValueError, match="absent from train"):
-        validate_splits(train_df, val_df, test_df, c2i, allow_missing_train_classes=False)
+        validate_splits(
+            train_df, val_df, test_df, c2i, allow_missing_train_classes=False
+        )
 
     # Inject signer overlap
     leaked_val = val_df.copy()
@@ -171,7 +178,9 @@ def test_map_features_by_manifest_handles_shuffled_order_and_nan():
     )
     labels = np.array([2, 0, 1], dtype=np.int64)
 
-    aligned_x, aligned_y = map_features_by_manifest(meta, manifest, features, labels, chunk_size=2)
+    aligned_x, aligned_y = map_features_by_manifest(
+        meta, manifest, features, labels, chunk_size=2
+    )
     assert aligned_y.tolist() == [0, 1, 2]
     assert np.allclose(aligned_x[:, 0, 0], [1.0, 2.0, 3.0])
 
@@ -193,5 +202,3 @@ def test_class_distribution_and_thresholds():
 
     thresh = compute_eligibility_thresholds(dist, [(3, 2, 2), (1, 1, 1)])
     assert thresh["eligible_classes"].tolist() == [1, 1]
-
-

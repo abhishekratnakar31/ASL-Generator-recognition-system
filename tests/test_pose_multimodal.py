@@ -55,10 +55,14 @@ def test_pose_normalization_invariance_and_augmentation():
 
     seq1 = normalize_asl_keypoints_sequence(raw_kpts, raw_scores)
     # Translate signer by (+60, -25) -> shoulder-normalized coordinates must stay identical
-    seq2 = normalize_asl_keypoints_sequence(raw_kpts + np.array([60.0, -25.0], dtype=np.float32), raw_scores)
+    seq2 = normalize_asl_keypoints_sequence(
+        raw_kpts + np.array([60.0, -25.0], dtype=np.float32), raw_scores
+    )
     assert seq1.shape == (32, POSE_FEATURE_DIM)
     assert np.isfinite(seq1).all()
-    assert np.allclose(seq1[:, : NUM_ASL_KEYPOINTS * 2], seq2[:, : NUM_ASL_KEYPOINTS * 2], atol=1e-5)
+    assert np.allclose(
+        seq1[:, : NUM_ASL_KEYPOINTS * 2], seq2[:, : NUM_ASL_KEYPOINTS * 2], atol=1e-5
+    )
 
     # Zero-confidence fallback produces finite zeros without NaN
     zero_scores = np.zeros((32, 133), dtype=np.float32)
@@ -80,7 +84,9 @@ def test_pose_multimodal_model_all_modes_backward():
     vocab = torch.randn(10, 48)
     labels = torch.tensor([0, 1, 2, 0], dtype=torch.long)
 
-    m_only = PoseVisualMultimodalModel(10, pose_dim=POSE_FEATURE_DIM, hidden_dim=32, mode="pose_only")
+    m_only = PoseVisualMultimodalModel(
+        10, pose_dim=POSE_FEATURE_DIM, hidden_dim=32, mode="pose_only"
+    )
     out_only = m_only(pose_x)
     assert out_only["logits"].shape == (4, 10)
     torch.nn.functional.cross_entropy(out_only["logits"], labels).backward()
@@ -154,4 +160,3 @@ def test_pose_extractor_from_frames():
 
     with pytest.raises(ValueError, match="No frames provided"):
         extractor.extract_from_frames([])
-

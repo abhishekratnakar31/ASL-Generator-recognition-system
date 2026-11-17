@@ -81,6 +81,8 @@ yarn-error.log*
 /data/
 !src/data/
 !src/data/**
+src/data/__pycache__/
+src/data/**/__pycache__/
 drive/
 raw_videos/
 videos/

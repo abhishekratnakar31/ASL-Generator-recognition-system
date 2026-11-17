@@ -1,6 +1,5 @@
 """Sanity tests for project structure, module imports, and requirements."""
 
-import os
 import sys
 from pathlib import Path
 
@@ -17,19 +16,21 @@ def test_project_directories():
     for d in expected_dirs:
         assert (base_dir / d).is_dir(), f"Expected directory {d} missing"
 
+
 def test_src_imports():
     """Verify that src submodules can be imported cleanly."""
     import src.data
-    import src.preprocessing
-    import src.models
-    import src.training
     import src.evaluation
+    import src.models
+    import src.preprocessing
+    import src.training
 
     assert src.data is not None
     assert src.preprocessing is not None
     assert src.models is not None
     assert src.training is not None
     assert src.evaluation is not None
+
 
 def test_metadata_file_exists():
     """Verify metadata directory contains expected schema docs."""

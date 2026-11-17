@@ -37,7 +37,11 @@ def test_all_src_and_script_files_parse_cleanly():
 def test_visual_classifier_forward_and_backward_from_features():
     from src.models.visual.visual_model import VisualClassifier
 
-    for temporal_type, pooling in [("lstm", "last"), ("lstm", "attention"), ("transformer", "attention")]:
+    for temporal_type, pooling in [
+        ("lstm", "last"),
+        ("lstm", "attention"),
+        ("transformer", "attention"),
+    ]:
         model = VisualClassifier(
             num_classes=23,
             feature_dim=64,
@@ -122,19 +126,26 @@ def test_trainer_and_evaluation_roundtrip(tmp_path: Path):
     y_va = np.array([0, 1, 2, 3] * 2, dtype=np.int64)
 
     tr_loader = DataLoader(CachedFeatureDataset(x_tr, y_tr), batch_size=4, shuffle=True)
-    va_loader = DataLoader(CachedFeatureDataset(x_va, y_va), batch_size=4, shuffle=False)
+    va_loader = DataLoader(
+        CachedFeatureDataset(x_va, y_va), batch_size=4, shuffle=False
+    )
 
-    model = VisualClassifier(num_classes=4, feature_dim=32, hidden_dim=16, num_layers=1).to(device)
+    model = VisualClassifier(
+        num_classes=4, feature_dim=32, hidden_dim=16, num_layers=1
+    ).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     criterion = torch.nn.CrossEntropyLoss()
     cfg = TrainerConfig(experiment_id="smoke_unit", epochs=2, use_amp=False, patience=5)
 
-    res = train_model(model, tr_loader, va_loader, criterion, optimizer, tmp_path / "run1", cfg)
+    res = train_model(
+        model, tr_loader, va_loader, criterion, optimizer, tmp_path / "run1", cfg
+    )
     assert (tmp_path / "run1" / "best_model.pt").is_file()
     assert (tmp_path / "run1" / "training_history.csv").is_file()
     assert len(res["history"]) == 2
 
-    eval_out = evaluate_checkpoint(model, va_loader, device, checkpoint_path=tmp_path / "run1" / "best_model.pt")
+    eval_out = evaluate_checkpoint(
+        model, va_loader, device, checkpoint_path=tmp_path / "run1" / "best_model.pt"
+    )
     assert eval_out["metrics"]["samples"] == 8
     assert eval_out["confusion_matrix"].shape == (4, 4)
-

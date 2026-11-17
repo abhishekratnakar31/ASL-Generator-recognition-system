@@ -9,7 +9,16 @@ from typing import Any
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, Header, HTTPException, Query, UploadFile
+from fastapi import (
+    FastAPI,
+    File,
+    Header,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -50,10 +59,25 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next: Any) -> Response:
+    """Ensure static files and interactive UI are never cached in browser during dev."""
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/frontend") or path in ("/", "/app"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
+REPORTS_DIR = Path(__file__).resolve().parent.parent.parent / "reports"
 
 if FRONTEND_DIR.is_dir():
     app.mount("/frontend", StaticFiles(directory=str(FRONTEND_DIR)), name="frontend")
+if REPORTS_DIR.is_dir():
+    app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR)), name="reports")
 
 
 @app.get("/")
@@ -99,14 +123,18 @@ def health_check() -> HealthResponse:
 @app.get("/api/v1/classes", response_model=ClassListResponse)
 @app.get("/classes", response_model=ClassListResponse)
 def list_classes(
-    search: str | None = Query(default=None, description="Optional substring filter for gloss names."),
+    search: str | None = Query(
+        default=None, description="Optional substring filter for gloss names."
+    ),
 ) -> ClassListResponse:
     """List all supported ASL sign classes."""
     try:
         service = get_inference_service()
         id_to_class = service.id_to_class
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Model service unavailable: {exc}") from exc
+        raise HTTPException(
+            status_code=503, detail=f"Model service unavailable: {exc}"
+        ) from exc
 
     items: list[ClassItem] = []
     query = search.strip().lower() if search else None
@@ -197,14 +225,18 @@ def predict_frames_endpoint(
             continue
 
     if not images:
-        raise HTTPException(status_code=400, detail="No decodable image frames found in payload.")
+        raise HTTPException(
+            status_code=400, detail="No decodable image frames found in payload."
+        )
 
     try:
         result = service.predict_frames(images, top_k=payload.top_k)
         return PredictionResponse(**result)
     except Exception as exc:
         logger.error("Inference failed on frames payload: %s", exc, exc_info=True)
-        raise HTTPException(status_code=422, detail=f"Inference failed on frames: {exc}") from exc
+        raise HTTPException(
+            status_code=422, detail=f"Inference failed on frames: {exc}"
+        ) from exc
 
 
 @app.post("/api/v1/predict/pose", response_model=PredictionResponse)
@@ -222,7 +254,9 @@ def predict_pose_stream(
         result = service.predict_pose(payload.pose_data, top_k=payload.top_k)
         return PredictionResponse(**result)
     except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Inference failed on pose payload: {exc}") from exc
+        raise HTTPException(
+            status_code=422, detail=f"Inference failed on pose payload: {exc}"
+        ) from exc
 
 
 @app.post("/api/v1/generate/sign", response_model=TextToSignResponse)
@@ -242,4 +276,6 @@ def generate_sign_from_text(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Sign retrieval failed: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Sign retrieval failed: {exc}"
+        ) from exc
