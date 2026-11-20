@@ -1,0 +1,17 @@
+{
+  "include": [
+    "src",
+    "backend",
+    "tests"
+  ],
+  "extraPaths": [
+    ".",
+    "src"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "."
+    }
+  ]
+}
+

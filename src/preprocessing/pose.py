@@ -295,7 +295,10 @@ class PoseExtractor:
         metadata_fps: float | None = 25.0,
     ) -> np.ndarray:
         """Decode video segment and extract (T, 349) normalized pose kinematics."""
-        from src.preprocessing.video import decode_video_segment_bgr
+        try:
+            from src.preprocessing.video import decode_video_segment_bgr
+        except (ImportError, ModuleNotFoundError):
+            from .video import decode_video_segment_bgr
 
         frames, _, _, _ = decode_video_segment_bgr(
             video_path=video_path,

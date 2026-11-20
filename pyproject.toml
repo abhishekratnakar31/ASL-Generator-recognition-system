@@ -5,3 +5,10 @@ target-version = ['py310']
 [tool.isort]
 profile = "black"
 line_length = 88
+
+[tool.pyright]
+include = ["src", "backend", "tests"]
+extraPaths = [".", "src"]
+executionEnvironments = [
+  { root = "." }
+]
